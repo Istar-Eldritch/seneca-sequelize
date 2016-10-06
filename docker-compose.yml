@@ -1,0 +1,11 @@
+version: '2'
+services:
+  play:
+    command: /bin/sh -c "npm i && npm run start"
+    image: node
+    working_dir: /opt
+    volumes:
+     - .:/opt
+     - /opt/node_modules
+    environment:
+      TERM: dumb

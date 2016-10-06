@@ -1,0 +1,19 @@
+{
+  "name": "seneca-sequelize",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/main/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "nodemon --watch src --watch package.json -e ts,json -q -x 'rm -fr dist && echo \"\\n============\\nCOMPILING...\\n============\\n\\n\" && tsc --outDir dist || return 0 && node dist/worksheet.js'",
+    "test": "echo 'no test suite defined' && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "latest",
+    "typescript": "latest"
+  }
+}
