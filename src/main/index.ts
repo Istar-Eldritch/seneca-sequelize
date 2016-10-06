@@ -50,8 +50,6 @@ async function init(modelsPath, seneca, sequelize) {
 
   });
 
-  await sequelize.sync();
-
   return sequelize;
 }
 
