@@ -16,6 +16,7 @@ const supportedCmds = [
   'count',
   'bulkCreate',
   'update',
+  'upsert',
   'destroy'
 ];
 
@@ -42,7 +43,8 @@ async function init(modelsPath, seneca, sequelize) {
     supportedCmds.forEach(command => {
       seneca.add({role: name, cmd: command}, (args, done) => {
         model[command](args.payload).then((result) => {
-          done(null, result);
+          let finalResult = typeof result === 'object' ? result : {result: result};
+          done(null, finalResult);
         })
         .catch(done);
       });
