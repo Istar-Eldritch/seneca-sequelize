@@ -6,6 +6,5 @@ services:
     working_dir: /opt
     volumes:
      - .:/opt
-     - /opt/node_modules
     environment:
       TERM: dumb
