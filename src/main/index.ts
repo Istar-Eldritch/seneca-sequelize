@@ -1,10 +1,8 @@
 import {promisify} from 'bluebird';
-import {Glob} from 'glob';
+import {sync} from 'glob';
 import {isAbsolute, join} from 'path';
 
 const pluginName = 'seneca-sequelize';
-
-const gAsync = promisify(Glob);
 
 const supportedCmds = [
   'create',
@@ -24,8 +22,8 @@ function getFunctions(model) {
   return Object.getOwnPropertyNames(model).filter(key => typeof model[key] === 'function');
 }
 
-async function init(modelsPath, seneca, sequelize) {
-  let files = await gAsync(modelsPath);
+function loadModels(modelsPath, seneca, sequelize) {
+  let files = sync(modelsPath);
   
   let models = files.reduce((acc, file) => {
     let filePath = isAbsolute(file) ? file : join(process.cwd(), file);
@@ -55,16 +53,26 @@ async function init(modelsPath, seneca, sequelize) {
   return sequelize;
 }
 
+function loadHooks(hooksPath, seneca, sequelize) {
+  let files = sync(hooksPath);
+
+  files.forEach((file) => {
+    let filePath = isAbsolute(file) ? file: join(process.cwd(), file);
+    let hook = require(filePath);
+    hook(seneca, sequelize);
+  });
+}
+
 function plugin(options) {
   let seneca = this;
   this.add({init: pluginName}, (args, done) => {
-    init(options.path, seneca, options.sequelize).then((sequelize) => {
-      console.log(`Plugin ${pluginName} loaded ${Object.keys(sequelize.models).length} models`);
-      done();
-    })
-    .catch(err => {
-      throw err;
-    });
+    let sequelize = options.sequelize;
+    loadModels(options.modelsPath, seneca, sequelize);
+    if (options.hooksPath) {
+      loadHooks(options.hooksPath, seneca, sequelize);
+    }
+    console.log(`Plugin ${pluginName} loaded ${Object.keys(sequelize.models).length} models`);
+    done();
   });
 
   return pluginName;
