@@ -41,7 +41,16 @@ function loadModels(modelsPath, seneca, sequelize) {
     supportedCmds.forEach(command => {
       seneca.add({role: name, cmd: command}, (args, done) => {
         model[command](args.payload).then((result) => {
-          let finalResult = typeof result === 'object' ? result.toJSON() : {result: result};
+          let finalResult;
+          if (Array.isArray(result)) {
+            finalResult = result.map(e => e.toJSON());
+          }
+          else if (typeof result === 'object' && typeof result.toJSON === 'function') {
+            finalResult = result.toJSON();
+          }
+          else {
+            finalResult = {result: result};
+          }
           done(null, finalResult);
         })
         .catch(done);
