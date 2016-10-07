@@ -43,7 +43,7 @@ async function init(modelsPath, seneca, sequelize) {
     supportedCmds.forEach(command => {
       seneca.add({role: name, cmd: command}, (args, done) => {
         model[command](args.payload).then((result) => {
-          let finalResult = typeof result === 'object' ? result : {result: result};
+          let finalResult = typeof result === 'object' ? result.toJSON() : {result: result};
           done(null, finalResult);
         })
         .catch(done);
