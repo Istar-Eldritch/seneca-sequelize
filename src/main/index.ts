@@ -42,7 +42,10 @@ function loadModels(modelsPath, seneca, sequelize) {
       seneca.add({role: name, cmd: command}, (args, done) => {
         model[command](args.payload).then((result) => {
           let finalResult;
-          if (Array.isArray(result)) {
+          if (!result) {
+            finalResult = result;
+          }
+          else if (Array.isArray(result)) {
             finalResult = result.map(e => e.toJSON());
           }
           else if (typeof result === 'object' && typeof result.toJSON === 'function') {
