@@ -42,7 +42,7 @@ function loadModels(modelsPath, seneca, sequelize) {
       seneca.add({role: name, cmd: command}, (args, done) => {
         model[command](args.payload).then((result) => {
           let finalResult;
-          if (!result) {
+          if (result === null) {
             finalResult = result;
           }
           else if (Array.isArray(result)) {
