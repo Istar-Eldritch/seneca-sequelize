@@ -54,16 +54,29 @@ function loadModels(modelsPath, seneca, sequelize) {
     }
 
     supportedCmds.forEach(command => {
-      seneca.add({role: name, cmd: command}, (args, done) => {
-        let payload = replaceModels(model.sequelize, args.payload || {});
+      seneca.add({role: name, cmd: command}, (msg, done) => {
 
-        model[command](payload).then((result) => {
+        let args = [];
+        if (command !== 'update' && command !== 'create') {
+          args.push(replaceModels(model.sequelize, msg.payload || {}));
+        }
+        else {
+          args.push(msg.payload);
+        }
+
+        if (command === 'update') {
+          args.push(replaceModels(model.sequelize, msg.query || {}));
+        }
+
+        model[command].apply(model, args).then((result) => {
           let finalResult;
           if (result === null) {
             finalResult = result;
           }
           else if (Array.isArray(result)) {
-            finalResult = result.map(e => e.toJSON());
+            finalResult = result.map(e => {
+              return typeof e.toJSON === 'function' ? e.toJSON() : e;
+            });
           }
           else if (typeof result === 'object' && typeof result.toJSON === 'function') {
             finalResult = result.toJSON();
