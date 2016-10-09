@@ -22,6 +22,21 @@ function getFunctions(model) {
   return Object.getOwnPropertyNames(model).filter(key => typeof model[key] === 'function');
 }
 
+function replaceModels(sequelize, payload) {
+
+  if (payload.model) {
+    payload.model = sequelize.models[payload.model];
+  }
+
+  if (payload.include) {
+    payload.include = payload.include.map(inclusion => {
+      return replaceModels(sequelize, inclusion);
+    });
+  }
+
+  return payload;
+}
+
 function loadModels(modelsPath, seneca, sequelize) {
   let files = sync(modelsPath);
   
@@ -40,7 +55,9 @@ function loadModels(modelsPath, seneca, sequelize) {
 
     supportedCmds.forEach(command => {
       seneca.add({role: name, cmd: command}, (args, done) => {
-        model[command](args.payload).then((result) => {
+        let payload = replaceModels(model.sequelize, args.payload || {});
+
+        model[command](payload).then((result) => {
           let finalResult;
           if (result === null) {
             finalResult = result;
