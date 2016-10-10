@@ -37,7 +37,7 @@ function replaceModels(sequelize, payload) {
   return payload;
 }
 
-function loadModels(modelsPath, seneca, sequelize) {
+function loadModels(roleName, modelsPath, seneca, sequelize) {
   let files = sync(modelsPath);
   
   let models = files.reduce((acc, file) => {
@@ -54,7 +54,7 @@ function loadModels(modelsPath, seneca, sequelize) {
     }
 
     supportedCmds.forEach(command => {
-      seneca.add({role: name, cmd: command}, (msg, done) => {
+      seneca.add({role: roleName, model: name, cmd: command}, (msg, done) => {
 
         let args = [];
         if (command !== 'update' && command !== 'create') {
@@ -109,7 +109,7 @@ function plugin(options) {
   let seneca = this;
   this.add({init: pluginName}, (args, done) => {
     let sequelize = options.sequelize;
-    loadModels(options.modelsPath, seneca, sequelize);
+    loadModels(options.roleName || 'crud', options.modelsPath, seneca, sequelize);
     if (options.hooksPath) {
       loadHooks(options.hooksPath, seneca, sequelize);
     }
