@@ -73,9 +73,6 @@ function loadModels(roleName, modelsPath, seneca, sequelize) {
           if (result === null) {
             finalResult = result;
           }
-          else if (command === 'count' && Array.isArray(result)) {
-            finalResult = {result: result[0].count};
-          }
           else if (Array.isArray(result)) {
             finalResult = result.map(e => {
               return typeof e.toJSON === 'function' ? e.toJSON() : e;
