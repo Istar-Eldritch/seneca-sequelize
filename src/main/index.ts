@@ -110,6 +110,10 @@ function plugin(options) {
   this.add({init: pluginName}, (args, done) => {
     let sequelize = options.sequelize;
     loadModels(options.roleName || 'crud', options.modelsPath, seneca, sequelize);
+    seneca.add({role: options.roleName, cmd: 'query', query: '*'}, async (msg, rep) => {
+      let results = await sequelize.query(msg.query, msg.payload);
+      rep(null, results);
+    });
     if (options.hooksPath) {
       loadHooks(options.hooksPath, seneca, sequelize);
     }
