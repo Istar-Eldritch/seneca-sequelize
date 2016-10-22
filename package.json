@@ -13,6 +13,11 @@
   "author": "Ruben Paz",
   "license": "MIT",
   "devDependencies": {
+    "@types/bluebird": "^3.0.35",
+    "@types/glob": "^5.0.30",
+    "@types/node": "^6.0.45",
+    "@types/seneca": "^2.1.5",
+    "@types/sequelize": "^4.0.38",
     "nodemon": "latest",
     "seneca": "^3.2.1",
     "sequelize": "^3.24.3",
@@ -25,11 +30,6 @@
     "seneca": "latest"
   },
   "dependencies": {
-    "@types/bluebird": "^3.0.35",
-    "@types/glob": "^5.0.30",
-    "@types/node": "^6.0.45",
-    "@types/seneca": "^2.1.5",
-    "@types/sequelize": "^4.0.38",
     "bluebird": "^3.4.6",
     "glob": "^7.1.0"
   }
