@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "Seneca microservice generator based on sequelize models",
   "main": "dist/main/index.js",
+  "types": "dist/main/index.d.ts",
   "directories": {
     "test": "test"
   },
