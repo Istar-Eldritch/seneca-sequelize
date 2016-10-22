@@ -1,7 +1,7 @@
 {
   "name": "seneca-sequelize",
   "version": "0.0.1",
-  "description": "",
+  "description": "Seneca microservice generator based on sequelize models",
   "main": "dist/main/index.js",
   "directories": {
     "test": "test"
@@ -10,8 +10,8 @@
     "start": "nodemon --watch src --watch package.json -e ts,json -q -x 'rm -fr dist && echo \"\\n============\\nCOMPILING...\\n============\\n\\n\" && tsc --outDir dist || return 0 && node debug dist/worksheet.js'",
     "test": "echo 'no test suite defined' && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Ruben Paz",
+  "license": "MIT",
   "devDependencies": {
     "nodemon": "latest",
     "seneca": "^3.2.1",
