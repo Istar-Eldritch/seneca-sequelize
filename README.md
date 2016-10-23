@@ -1,6 +1,9 @@
 # seneca-sequelize
 This plugin makes a microservice out of your sequelize models. It works wrapping your sequelize instance and exposing your model methods as actions.
 
+### Install with npm
+`npm i --save seneca-sequelize`
+
 ### Define your models
 ```ts
 // user.js
@@ -18,7 +21,7 @@ export default function(sequelize, types) {
 ```ts
 import * as Sequelize from 'sequelize';
 import * as Seneca from 'seneca';
-import senecaSeq from './main/index';
+import senecaSeq from 'seneca-sequelize';
 
 // Setup your seneca instance
 const seneca = Seneca();
