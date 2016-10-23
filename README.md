@@ -31,8 +31,15 @@ const sequelize = new Sequelize('user', 'password', 'database', {
   dialect: 'sqlite'
 });
 
-// Initialize the plugin
-seneca.use(senecaSeq, {path: 'dist/test/models/*', sequelize: sequelize});
+/**
+ * Initialize the plugin
+ * Options:
+ *  - sequelize (required): A sequelize instance.
+ *  - modelsPath (required): The path where you have defined your sequelize models.
+ *  - hooksPath (optional): The path where you have defined your sequelize hooks.
+ *  - roleName (Optional): The role that will be used when you call act on seneca to access the generated services.
+ */
+seneca.use(senecaSeq, {modelsPath: 'dist/test/models/*', sequelize: sequelize, roleName: 'mymodels'});
 
 // Start your seneca service
 seneca.listen();
@@ -42,7 +49,8 @@ seneca.listen();
 ```bash
 curl http://localhost:10101/act -d '
 {
-  "role": "user",
+  "role": "mymodels"
+  "model": "user",
   "cmd": "findAll"
   "payload": {
     "where": {
