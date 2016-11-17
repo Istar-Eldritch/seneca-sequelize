@@ -104,7 +104,7 @@ function loadHooks(hooksPath, seneca, sequelize) {
   });
 }
 
-const upsert = (queue) => (msg, response) => {
+const upsert = (seneca, options) => (msg, response) => {
 
   const model = msg.model;
   const query = msg.query;
@@ -113,23 +113,28 @@ const upsert = (queue) => (msg, response) => {
   // Check if dataset exists.
   async function wrapper () {
     let req = {
-      role: 'vault',
+      role: options.roleName,
       model: model,
       cmd: 'findOne',
       payload: query
     };
 
-    let exists = await queue.actAsync(req);
+    let exists = await seneca.actAsync(req);
 
     let id;
     if (!exists) {
-      let opts = {role: 'vault', model: model, cmd: 'create', payload: payload};
-      return queue.actAsync(opts);
+      let opts = {
+        role: options.roleName,
+        model: model,
+        cmd: 'create',
+        payload: payload
+      };
+      return seneca.actAsync(opts);
     } else {
       payload.id = exists.id;
       let opts = {
-        role: 'vault',
-        model: 'dataset',
+        role: options.roleName,
+        model: model,
         cmd: 'update',
         query: {
           where: {
@@ -138,7 +143,7 @@ const upsert = (queue) => (msg, response) => {
         },
         payload: payload
       };
-      return queue.actAsync(opts);
+      return seneca.actAsync(opts);
     }
   }
 
@@ -163,7 +168,7 @@ function plugin(options) {
     done();
   });
 
-  this.add({ role: options.roleName, cmd: 'upsert', model: '*', payload: '*', query:'*'}, upsert(seneca));
+  this.add({ role: options.roleName, cmd: 'upsert', model: '*', payload: '*', query:'*'}, upsert(seneca, options));
 
   return pluginName;
 }
