@@ -3,3 +3,4 @@ dist
 # Dependencies
 node_modules
 typings
+.idea

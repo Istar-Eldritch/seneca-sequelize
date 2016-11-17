@@ -1,4 +1,4 @@
-import {promisify} from 'bluebird';
+import {promisifyAll} from 'bluebird';
 import {sync} from 'glob';
 import {isAbsolute, join} from 'path';
 
@@ -14,7 +14,6 @@ const supportedCmds = [
   'count',
   'bulkCreate',
   'update',
-  'upsert',
   'destroy'
 ];
 
@@ -105,8 +104,51 @@ function loadHooks(hooksPath, seneca, sequelize) {
   });
 }
 
+const upsert = (queue) => (msg, response) => {
+
+  const model = msg.model;
+  const query = msg.query;
+  const payload = msg.payload;
+
+  // Check if dataset exists.
+  async function wrapper () {
+    let req = {
+      role: 'vault',
+      model: model,
+      cmd: 'findOne',
+      payload: query
+    };
+
+    let exists = await queue.actAsync(req);
+
+    let id;
+    if (!exists) {
+      let opts = {role: 'vault', model: model, cmd: 'create', payload: payload};
+      return queue.actAsync(opts);
+    } else {
+      payload.id = exists.id;
+      let opts = {
+        role: 'vault',
+        model: 'dataset',
+        cmd: 'update',
+        query: {
+          where: {
+            id: payload.id
+          }
+        },
+        payload: payload
+      };
+      return queue.actAsync(opts);
+    }
+  }
+
+  wrapper().then(res => response(null, res)).catch(err => response(err))
+
+};
+
 function plugin(options) {
   let seneca = this;
+  promisifyAll(seneca);
   this.add({init: pluginName}, (args, done) => {
     let sequelize = options.sequelize;
     loadModels(options.roleName || 'crud', options.modelsPath, seneca, sequelize);
@@ -120,6 +162,8 @@ function plugin(options) {
     console.log(`Plugin ${pluginName} loaded ${Object.keys(sequelize.models).length} models`);
     done();
   });
+
+  this.add({ role: options.roleName, cmd: 'upsert', model: '*', payload: '*', query:'*'}, upsert(seneca));
 
   return pluginName;
 }
