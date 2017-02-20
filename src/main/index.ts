@@ -17,9 +17,9 @@ const supportedCmds = [
   'destroy'
 ];
 
-function getFunctions(model) {
-  return Object.getOwnPropertyNames(model).filter(key => typeof model[key] === 'function');
-}
+// function getFunctions(model) {
+//   return Object.getOwnPropertyNames(model).filter(key => typeof model[key] === 'function');
+// }
 
 function replaceModels(sequelize, payload) {
 
@@ -37,14 +37,17 @@ function replaceModels(sequelize, payload) {
 }
 
 function loadModels(roleName, modelsPath, seneca, sequelize) {
-  let files = sync(modelsPath);
-  
-  let models = files.reduce((acc, file) => {
-    let filePath = isAbsolute(file) ? file : join(process.cwd(), file);
-    let model = sequelize.import(filePath);
-    acc[model.name] = model;
-    return acc;
-  }, {});
+  const files = sync(modelsPath);
+
+  const models = files.reduce(
+    (acc, file) => {
+      const filePath = isAbsolute(file) ? file : join(process.cwd(), file);
+      const model = sequelize.import(filePath);
+      acc[model.name] = model;
+      return acc;
+    },
+    {}
+  );
 
   Object.keys(models).forEach(name => {
     let model = models[name];
@@ -57,7 +60,9 @@ function loadModels(roleName, modelsPath, seneca, sequelize) {
 
         let args = [];
         if (command !== 'update' && command !== 'create') {
-          args.push(replaceModels(model.sequelize, msg.payload || {}));
+          const q = replaceModels(model.sequelize, msg.payload || {});
+          q.raw = true;
+          args.push(q);
         }
         else {
           args.push(msg.payload);
@@ -98,8 +103,8 @@ function loadHooks(hooksPath, seneca, sequelize) {
   let files = sync(hooksPath);
 
   files.forEach((file) => {
-    let filePath = isAbsolute(file) ? file: join(process.cwd(), file);
-    let hook = require(filePath);
+    const filePath = isAbsolute(file) ? file : join(process.cwd(), file);
+    const hook = require(filePath);
     hook(seneca, sequelize);
   });
 }
@@ -121,7 +126,6 @@ const upsert = (seneca, options) => (msg, response) => {
 
     let exists = await seneca.actAsync(req);
 
-    let id;
     if (!exists) {
       let opts = {
         role: options.roleName,
@@ -147,18 +151,18 @@ const upsert = (seneca, options) => (msg, response) => {
     }
   }
 
-  wrapper().then(res => response(null, res)).catch(err => response(err))
+  wrapper().then(res => response(null, res)).catch(err => response(err));
 
 };
 
 function plugin(options) {
-  let seneca = this;
+  const seneca = this;
   promisifyAll(seneca);
-  this.add({init: pluginName}, (args, done) => {
-    let sequelize = options.sequelize;
+  seneca.add({init: pluginName}, (args, done) => {
+    const sequelize = options.sequelize;
     loadModels(options.roleName || 'crud', options.modelsPath, seneca, sequelize);
     seneca.add({role: options.roleName, cmd: 'query', query: '*'}, async (msg, rep) => {
-      let results = await sequelize.query(msg.query, msg.payload);
+      const results = await sequelize.query(msg.query, msg.payload);
       rep(null, results);
     });
     if (options.hooksPath) {
@@ -168,7 +172,7 @@ function plugin(options) {
     done();
   });
 
-  this.add({ role: options.roleName, cmd: 'upsert', model: '*', payload: '*', query:'*'}, upsert(seneca, options));
+  seneca.add({ role: options.roleName, cmd: 'upsert', model: '*', payload: '*', query: '*'}, upsert(seneca, options));
 
   return pluginName;
 }
